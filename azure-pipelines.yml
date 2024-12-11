@@ -8,34 +8,16 @@ stages:
   jobs:
     - job: firstjob
       steps:
-      - bash: echo Build First Job
-    - job: SecondJob
-      steps:
-      - bash: echo Build Second Job
-- stage: DevDeploy
-  variables:
-    environment: Dev
-  dependsOn: Build
-  jobs:
-    - job: DevFist
-      steps:
-      - bash: echo $(environment)DeployJob
-    - job: DevSeccond
-      steps:
-      - bash: echo Dev Second Job
-- stage: QADeploy
-  variables:
-     environment: 
-  dependsOn: Build
-  jobs:
-    - job: QAJob
-      steps:
-      - bash: echo $(environment)QADeploy
-- stage: ProdDeploy
-  dependsOn:
-  - DevDeploy
-  - QADeploy
-  jobs:
-    - job: ProductionsJob
-      steps:
-      - bash: echo $(environment)ProdDeploy
+      - bash: ls -R $(Build.ArtifactStagingDirectory)
+      - task: CopyFiles@2
+        inputs:
+          SourceFolder: '$(System.DefaultWorkingDirectory)'
+          Contents: |
+            **/*.yml
+            **/*.java
+          TargetFolder: '$(Build.ArtifactStagingDirectory)'
+      - task: PublishBuildArtifacts@1
+        inputs:
+          PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+          ArtifactName: 'drop'
+          publishLocation: 'Container'
